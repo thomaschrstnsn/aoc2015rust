@@ -15,3 +15,7 @@ test_lib = []
 
 [dependencies]
 pico-args = "0.5.0"
+
+# solution dependencies
+rstest = "0.18.2"
+itertools = "0.12.1"

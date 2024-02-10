@@ -42,15 +42,16 @@
           pkg-config
           cargo-deny
           cargo-edit
+          cargo-nextest
           cargo-watch
           rust-analyzer
         ];
 
         shellHook = ''
           ${pkgs.rustToolchain}/bin/cargo --version
-          
+
           export RUST_SRC_PATH="${pkgs.rust.packages.stable.rustPlatform.rustLibSrc}";
-          
+
           export PATH=$PATH:~/.cargo/bin
         '';
       };
