@@ -19,3 +19,4 @@ pico-args = "0.5.0"
 # solution dependencies
 rstest = "0.18.2"
 itertools = "0.12.1"
+md5 = "0.7.0"
