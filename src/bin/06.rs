@@ -42,6 +42,16 @@ impl<'b> Iterator for IndexIterator<'b> {
     }
 }
 
+trait Light {
+    fn count_on(&self) -> usize;
+
+    fn turn_off(&mut self, start: &Coord, end: &Coord);
+
+    fn turn_on(&mut self, start: &Coord, end: &Coord);
+
+    fn toggle(&mut self, start: &Coord, end: &Coord);
+}
+
 struct LightsOne(Vec<bool>);
 
 impl LightsOne {
@@ -49,7 +59,17 @@ impl LightsOne {
         let vec: Vec<bool> = (0..1_000_000).map(|_| false).collect();
         Self(vec)
     }
+    fn iterate(&mut self, start: &Coord, end: &Coord, f: fn(bool) -> bool) {
+        let index_iter = IndexIterator::new(start, end);
+        for index in index_iter {
+            if let Some(l) = self.0.get_mut(index) {
+                *l = f(*l);
+            }
+        }
+    }
+}
 
+impl Light for LightsOne {
     fn count_on(&self) -> usize {
         let Self(vec) = self;
         vec.iter().filter(|&b| *b).count()
@@ -67,14 +87,6 @@ impl LightsOne {
         self.iterate(start, end, |b| !b)
     }
 
-    fn iterate(&mut self, start: &Coord, end: &Coord, f: fn(bool) -> bool) {
-        let index_iter = IndexIterator::new(start, end);
-        for index in index_iter {
-            if let Some(l) = self.0.get_mut(index) {
-                *l = f(*l);
-            }
-        }
-    }
 }
 
 #[derive(Debug)]
@@ -132,23 +144,9 @@ fn parse_line(input: &str) -> Result<Instruction, ParseError> {
 }
 
 pub fn part_one(input: &str) -> Option<usize> {
-    let instructions: Vec<Instruction> = input
-        .lines()
-        .map(parse_line)
-        .collect::<Result<Vec<_>, _>>()
-        .expect("parses all lines");
-
     let mut lights = LightsOne::new();
 
-    for inst in instructions {
-        match inst {
-            Instruction::TurnOn { start, end } => lights.turn_on(&start, &end),
-            Instruction::TurnOff { start, end } => lights.turn_off(&start, &end),
-            Instruction::Toggle { start, end } => lights.toggle(&start, &end),
-        }
-    }
-
-    Some(lights.count_on())
+    generic_solution(input, &mut lights)
 }
 
 struct LightsTwo(Vec<usize>);
@@ -159,6 +157,17 @@ impl LightsTwo {
         Self(vec)
     }
 
+    fn iterate(&mut self, start: &Coord, end: &Coord, f: fn(usize) -> usize) {
+        let index_iter = IndexIterator::new(start, end);
+        for index in index_iter {
+            if let Some(l) = self.0.get_mut(index) {
+                *l = f(*l);
+            }
+        }
+    }
+}
+
+impl Light for LightsTwo {
     fn count_on(&self) -> usize {
         let Self(vec) = self;
         vec.iter().sum()
@@ -175,25 +184,14 @@ impl LightsTwo {
     fn toggle(&mut self, start: &Coord, end: &Coord) {
         self.iterate(start, end, |v| v.saturating_add(2))
     }
-
-    fn iterate(&mut self, start: &Coord, end: &Coord, f: fn(usize) -> usize) {
-        let index_iter = IndexIterator::new(start, end);
-        for index in index_iter {
-            if let Some(l) = self.0.get_mut(index) {
-                *l = f(*l);
-            }
-        }
-    }
 }
 
-pub fn part_two(input: &str) -> Option<usize> {
+fn generic_solution(input: &str, lights: &mut impl Light) -> Option<usize> {
     let instructions: Vec<Instruction> = input
         .lines()
         .map(parse_line)
         .collect::<Result<Vec<_>, _>>()
         .expect("parses all lines");
-
-    let mut lights = LightsTwo::new();
 
     for inst in instructions {
         match inst {
@@ -204,6 +202,12 @@ pub fn part_two(input: &str) -> Option<usize> {
     }
 
     Some(lights.count_on())
+}
+
+pub fn part_two(input: &str) -> Option<usize> {
+    let mut lights = LightsTwo::new();
+
+    generic_solution(input, &mut lights)
 }
 
 #[cfg(test)]
