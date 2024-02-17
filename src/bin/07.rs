@@ -262,7 +262,7 @@ mod tests {
     }
 
     #[test]
-    fn test_part_one() {
+    fn test_circuit_example() {
         let contents = advent_of_code::template::read_file("examples", DAY);
         let elements = parse(&contents);
         let circuit = Circuit::new_from_elements(&elements);
@@ -283,11 +283,5 @@ mod tests {
         .collect();
 
         assert_eq!(result, expected);
-    }
-
-    #[test]
-    fn test_part_two() {
-        let result = part_two(&advent_of_code::template::read_file("examples", DAY));
-        assert_eq!(result, None);
     }
 }
