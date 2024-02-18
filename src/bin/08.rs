@@ -1,6 +1,6 @@
 advent_of_code::solution!(8);
 
-fn string_escaped(input: &str) -> String {
+fn unescape_string(input: &str) -> String {
     let input = input.strip_prefix('"').expect("should start with a quote");
     let input = input.strip_suffix('"').expect("should end with a quote");
 
@@ -49,12 +49,46 @@ fn string_escaped(input: &str) -> String {
     result.iter().collect()
 }
 
-pub fn part_one(input: &str) -> Option<usize> {
-    Some(input.lines().map(|l| l.len().abs_diff(string_escaped(l).len())).sum())
+fn escape_string(input: &str) -> String {
+    let mut result: Vec<char> = Vec::with_capacity(input.len() + 2);
+    result.push('"');
+
+    for c in input.chars() {
+        match c {
+            '"' => {
+                result.push('\\');
+                result.push('"');
+            }
+            '\\' => {
+                result.push('\\');
+                result.push('\\');
+            }
+            c => {
+                result.push(c);
+            }
+        }
+    }
+
+    result.push('"');
+    result.iter().collect()
 }
 
-pub fn part_two(input: &str) -> Option<u32> {
-    None
+pub fn part_one(input: &str) -> Option<usize> {
+    Some(
+        input
+            .lines()
+            .map(|l| l.len().abs_diff(unescape_string(l).len()))
+            .sum(),
+    )
+}
+
+pub fn part_two(input: &str) -> Option<usize> {
+    Some(
+        input
+            .lines()
+            .map(|l| l.len().abs_diff(escape_string(l).len()))
+            .sum(),
+    )
 }
 
 #[cfg(test)]
@@ -62,12 +96,22 @@ mod tests {
     use super::*;
 
     #[test]
-    fn test_string_escaped_examples() {
+    fn test_unescape_string_examples() {
         let results: Vec<String> = advent_of_code::template::read_file("examples", DAY)
             .lines()
-            .map(string_escaped)
+            .map(unescape_string)
             .collect();
-        assert_eq!(results, vec!["", "abc", "aaa\"aaa", "'"]);
+        assert_eq!(results, vec!["", "abc", "aaa\"aaa", "X"]);
+    }
+
+    #[test]
+    fn test_escape_string_examples() {
+        let results: Vec<usize> = advent_of_code::template::read_file("examples", DAY)
+            .lines()
+            .map(escape_string)
+            .map(|s| s.len())
+            .collect();
+        assert_eq!(results, vec![6, 9, 16, 11]);
     }
 
     #[test]
@@ -79,6 +123,6 @@ mod tests {
     #[test]
     fn test_part_two() {
         let result = part_two(&advent_of_code::template::read_file("examples", DAY));
-        assert_eq!(result, None);
+        assert_eq!(result, Some(19));
     }
 }
